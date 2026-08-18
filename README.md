@@ -109,9 +109,53 @@ $$
 
 
 ```python
-# Write your code here
+# -------------------------------------------------
+# Monte Carlo Control
+# -------------------------------------------------
 
+epsilon = epsilon_start
 
+for episode_num in range(num_episodes):
+
+    # Generate complete episode
+    episode = generate_episode(epsilon)
+
+    # Store total reward
+    total_reward = sum([step[2] for step in episode])
+    episode_rewards.append(total_reward)
+
+    # Calculate returns
+    G = 0
+
+    # Keep track of state-action pairs already updated
+    visited = set()
+
+    # Process episode backwards
+    for state, action, reward in reversed(episode):
+
+        G = gamma * G + reward
+
+        # First-visit Monte Carlo
+        if (state, action) not in visited:
+
+            visited.add((state, action))
+
+            # Incremental update of Q-value
+            Q[state, action] = Q[state, action] + alpha * (G - Q[state, action])
+
+    epsilon = max(
+        epsilon_min,
+        epsilon * epsilon_decay
+    )
+
+    # Print progress
+    if (episode_num + 1) % 1000 == 0:
+        avg_reward = np.mean(episode_rewards[-1000:])
+        print(
+            f"Episode {episode_num + 1}/{num_episodes}, "
+            f"Epsilon: {epsilon:.4f}, "
+            f"Average Reward: {avg_reward:.3f}"
+        )
 
 ```
 
@@ -119,33 +163,24 @@ $$
 
 ## Output
 
-```text
+
 Final Q-table:
 
 
-
-Estimated State-Value Function:
-
+<img width="735" height="697" alt="Screenshot 2026-08-18 153731" src="https://github.com/user-attachments/assets/b8db39ca-1b2d-4f0a-8708-3bb78de835e3" />
 
 
-
+<img width="905" height="482" alt="Screenshot 2026-08-18 153532" src="https://github.com/user-attachments/assets/ffe57fcd-3958-4aeb-945c-eaa66d47a8b6" />
 
 
 
-Learned Policy:
+<img width="992" height="700" alt="Screenshot 2026-08-18 153749" src="https://github.com/user-attachments/assets/af181ac5-a900-431a-b664-5814eb50ddb4" />
 
-
-
-
-
-Average reward over last 1000 episodes: 
-```
-
-
----
 
 ## Result
 ```text
+
+The On-Policy Monte Carlo Control algorithm was successfully implemented using Gymnasium's FrozenLake-v1 environment. The agent learned an improved policy using Monte Carlo returns and an epsilon-greedy strategy.
 
 
 
@@ -154,6 +189,12 @@ Average reward over last 1000 episodes:
 
 ## Inference
 ```text
+
+The learned Q-table represents the estimated value of taking each action in every state. The state-value function is obtained by selecting the maximum Q-value for each state.
+
+The epsilon-greedy policy allows the agent to explore different actions initially and gradually exploit the actions that provide higher estimated returns.
+
+The learning curve shows the change in the average reward as the number of training episodes increases.
 
 
 
